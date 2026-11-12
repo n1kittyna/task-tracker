@@ -1,0 +1,58 @@
+{# Переиспользуемые кусочки: поля формы, бейджи, пагинация #}
+
+{% macro field(f) %}
+  <div class="mb-3">
+    {{ f.label(class="form-label") }}
+    {{ f(class="form-control" + (" is-invalid" if f.errors else "")) }}
+    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+    {% if f.description %}<div class="form-text">{{ f.description }}</div>{% endif %}
+  </div>
+{% endmacro %}
+
+{% macro select_field(f) %}
+  <div class="mb-3">
+    {{ f.label(class="form-label") }}
+    {{ f(class="form-select" + (" is-invalid" if f.errors else "")) }}
+    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro check_field(f) %}
+  <div class="form-check mb-3">
+    {{ f(class="form-check-input") }} {{ f.label(class="form-check-label") }}
+  </div>
+{% endmacro %}
+
+{% macro status_badge(status) %}
+  {% set cls = {'todo': 'bg-secondary', 'in_progress': 'bg-primary', 'done': 'bg-success'} %}
+  <span class="badge {{ cls.get(status, 'bg-secondary') }}" data-status-badge>{{ STATUS_LABELS[status] }}</span>
+{% endmacro %}
+
+{% macro priority_badge(priority) %}
+  {% set cls = {'low': 'bg-light text-dark border', 'medium': 'bg-warning text-dark', 'high': 'bg-danger'} %}
+  <span class="badge {{ cls.get(priority) }}">{{ PRIORITY_LABELS[priority] }}</span>
+{% endmacro %}
+
+{% macro pagination(pag) %}
+  {% if pag.pages > 1 %}
+  <nav>
+    <ul class="pagination">
+      <li class="page-item {% if not pag.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_with(page=pag.prev_num or 1) }}">«</a>
+      </li>
+      {% for p in pag.iter_pages(left_edge=1, left_current=2, right_current=3, right_edge=1) %}
+        {% if p %}
+          <li class="page-item {% if p == pag.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_with(page=p) }}">{{ p }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not pag.has_next %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_with(page=pag.next_num or pag.pages) }}">»</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+{% endmacro %}

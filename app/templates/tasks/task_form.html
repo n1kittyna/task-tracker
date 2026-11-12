@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui %}
+{% block title %}{{ 'Редактирование задачи' if task else 'Новая задача' }}{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">{{ 'Редактирование задачи #' ~ task.id if task else 'Новая задача' }}</h1>
+
+<!-- Одна форма на create и update: action зависит от контекста -->
+<form method="post" class="card card-body col-lg-8"
+      action="{{ url_for('tasks.task_edit', task_id=task.id) if task else url_for('tasks.task_create') }}">
+  {{ form.hidden_tag() }}  {# CSRF-токен #}
+  {{ ui.field(form.title) }}
+  {{ ui.field(form.description) }}
+  <div class="row">
+    <div class="col-md-4">{{ ui.select_field(form.status) }}</div>
+    <div class="col-md-4">{{ ui.select_field(form.priority) }}</div>
+    <div class="col-md-4">{{ ui.field(form.due_date) }}</div>
+  </div>
+  {{ ui.select_field(form.assignee_id) }}
+  <div class="d-flex gap-2">
+    {{ form.submit(class="btn btn-primary") }}
+    <a class="btn btn-outline-secondary"
+       href="{{ url_for('tasks.task_detail', task_id=task.id) if task else url_for('tasks.task_list') }}">Отмена</a>
+  </div>
+</form>
+{% endblock %}

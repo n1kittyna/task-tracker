@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flask: запуск с отладкой",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "flask",
+      "args": ["--app", "wsgi", "run", "--debug", "--no-reload"],
+      "env": { "FLASK_DEBUG": "1" },
+      "jinja": true
+    },
+    {
+      "name": "Pytest: все тесты",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-v"],
+      "console": "integratedTerminal"
+    }
+  ]
+}

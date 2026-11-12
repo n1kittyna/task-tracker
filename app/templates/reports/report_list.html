@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h3 mb-3">Отчёты</h1>
+{% if current_user.role == Role.EMPLOYEE.value %}
+  <div class="alert alert-info">Вы видите личную статистику — только по своим задачам.</div>
+{% elif current_user.role == Role.MANAGER.value %}
+  <div class="alert alert-info">Отчёт по вашей команде и созданным вами задачам.</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  {% for item in summary %}
+  <div class="col-md-3"><div class="card card-body">
+    <div class="text-muted">{{ item.label }}</div>
+    <div class="h3 mb-0">{{ item.count }}</div>
+  </div></div>
+  {% endfor %}
+  <div class="col-md-3"><div class="card card-body border-danger">
+    <div class="text-muted">Просрочено</div>
+    <div class="h3 mb-0 text-danger">{{ totals.overdue }}</div>
+  </div></div>
+</div>
+
+<div class="row">
+  <div class="col-lg-7">
+    <h2 class="h5">По исполнителям</h2>
+    <table class="table table-bordered bg-white">
+      <thead class="table-light">
+        <tr><th>Исполнитель</th><th>Всего</th><th>Завершено</th><th>Просрочено</th></tr>
+      </thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td>{{ r.username }}</td>
+          <td>{{ r.total }}</td>
+          <td>{{ r.done }}</td>
+          <td class="{{ 'text-danger' if r.overdue }}">{{ r.overdue }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="text-muted">Нет назначенных задач</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="col-lg-5">
+    <canvas id="statusChart"></canvas>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  // Данные приходят из view и безопасно сериализуются через |tojson
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: {{ chart_labels|tojson }},
+      datasets: [{
+        data: {{ chart_values|tojson }},
+        backgroundColor: ['#6c757d', '#0d6efd', '#198754']
+      }]
+    }
+  });
+</script>
+{% endblock %}

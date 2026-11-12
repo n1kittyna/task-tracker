@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h1 class="h3">Пользователи</h1>
+  <a class="btn btn-primary" href="{{ url_for('users.user_create') }}">+ Пользователь</a>
+</div>
+
+<form method="get" class="mb-3 d-flex gap-2">
+  <select name="role" class="form-select w-auto">
+    <option value="">все роли</option>
+    {% for value, label in ROLE_LABELS.items() %}
+      <option value="{{ value }}" {% if request.args.get('role') == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-outline-primary">Фильтр</button>
+</form>
+
+<table class="table bg-white">
+  <thead class="table-light">
+    <tr><th>Логин</th><th>E-mail</th><th>Роль</th><th>Руководитель</th><th>Активен</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td>{{ u.username }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.role_label }}</td>
+      <td>{{ u.manager.username if u.manager else '—' }}</td>
+      <td>{{ '✅' if u.is_active else '⛔' }}</td>
+      <td><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('users.user_edit', user_id=u.id) }}">Изменить</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

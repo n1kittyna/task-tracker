@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui %}
+{% block content %}
+<h1 class="h3 mb-3">Регистрация</h1>
+<form method="post" class="card card-body col-md-5">
+  {{ form.hidden_tag() }}
+  {{ ui.field(form.username) }}
+  {{ ui.field(form.email) }}
+  {{ ui.field(form.password) }}
+  {{ ui.field(form.confirm) }}
+  <div class="alert alert-info small">
+    Новым пользователям выдаётся роль «Сотрудник». Роль повышает администратор.
+  </div>
+  {{ form.submit(class="btn btn-primary") }}
+</form>
+{% endblock %}

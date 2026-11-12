@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h3">403 — недостаточно прав</h1>
+<p>Это действие доступно другой роли. <a href="{{ url_for('main.dashboard') }}">На дашборд</a></p>
+{% endblock %}

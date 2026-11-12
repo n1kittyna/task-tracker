@@ -1,0 +1,10 @@
+{
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": ["tests"],
+  "files.associations": { "**/templates/**/*.html": "jinja-html" },
+  "emmet.includeLanguages": { "jinja-html": "html" },
+  "editor.tabSize": 4,
+  "files.trimTrailingWhitespace": true,
+  "python.analysis.extraPaths": ["."]
+}

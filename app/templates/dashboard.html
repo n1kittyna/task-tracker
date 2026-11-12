@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui %}
+{% block content %}
+<h1 class="h3 mb-3">Дашборд</h1>
+<div class="row g-3 mb-4">
+  {% for title, value, cls in [
+        ('Мои задачи', stats.my_total, 'primary'),
+        ('Мои просроченные', stats.my_overdue, 'danger'),
+        ('Завершено (в моей области)', stats.done, 'success')] %}
+  <div class="col-md-4">
+    <div class="card border-{{ cls }}">
+      <div class="card-body">
+        <div class="text-muted">{{ title }}</div>
+        <div class="display-6 text-{{ cls }}">{{ value }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<h2 class="h5">Последние задачи</h2>
+<ul class="list-group">
+  {% for task in recent %}
+    <li class="list-group-item d-flex justify-content-between">
+      <a href="{{ url_for('tasks.task_detail', task_id=task.id) }}">{{ task.title }}</a>
+      {{ ui.status_badge(task.status) }}
+    </li>
+  {% else %}
+    <li class="list-group-item text-muted">Пока пусто</li>
+  {% endfor %}
+</ul>
+{% endblock %}

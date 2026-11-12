@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h3">404 — не найдено</h1>
+<p>Объект не существует или недоступен вам. <a href="{{ url_for('tasks.task_list') }}">К задачам</a></p>
+{% endblock %}

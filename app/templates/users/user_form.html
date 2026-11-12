@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui %}
+{% block content %}
+<h1 class="h3 mb-3">{{ 'Пользователь ' ~ user.username if user else 'Новый пользователь' }}</h1>
+<form method="post" class="card card-body col-lg-6">
+  {{ form.hidden_tag() }}
+  {{ ui.field(form.username) }}
+  {{ ui.field(form.email) }}
+  {{ ui.select_field(form.role) }}
+  {{ ui.select_field(form.manager_id) }}
+  {{ ui.check_field(form.is_active) }}
+  {{ ui.field(form.password) }}
+  {{ form.submit(class="btn btn-primary") }}
+</form>
+{% endblock %}

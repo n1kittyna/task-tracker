@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card border-danger col-lg-6">
+  <div class="card-body">
+    <h1 class="h5 text-danger">Удалить задачу?</h1>
+    <p>«<strong>{{ task.title }}</strong>» будет удалена безвозвратно.</p>
+    <form method="post" data-confirm="Точно удалить задачу «{{ task.title }}»?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-danger">Да, удалить</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('tasks.task_detail', task_id=task.id) }}">Отмена</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
