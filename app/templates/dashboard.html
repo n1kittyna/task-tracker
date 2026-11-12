@@ -17,6 +17,17 @@
   </div>
   {% endfor %}
 </div>
+<div class="card card-body mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="fw-semibold">Доля завершённых задач</span>
+    <strong>{{ stats.completion_percent }}%</strong>
+  </div>
+  <div class="progress" role="progressbar" aria-label="Процент выполнения задач"
+       aria-valuenow="{{ stats.completion_percent }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar bg-success" style="width: {{ stats.completion_percent }}%"></div>
+  </div>
+  <small class="text-muted mt-2">Завершено {{ stats.done }} из {{ stats.visible_total }} доступных задач</small>
+</div>
 <h2 class="h5">Последние задачи</h2>
 <ul class="list-group">
   {% for task in recent %}

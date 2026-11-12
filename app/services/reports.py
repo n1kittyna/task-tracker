@@ -1,4 +1,4 @@
-"""Агрегаты. Только SQL-функции, работающие и в SQLite, и в PostgreSQL."""
+"""Агрегации, совместимые с SQLite и PostgreSQL."""
 from sqlalchemy import and_, case, func
 
 from ..extensions import db
@@ -11,8 +11,11 @@ def _count(user: User, *extra) -> int:
     return db.session.scalar(stmt) or 0
 
 
+def _percent(done: int, total: int) -> int:
+    return round(done * 100 / total) if total else 0
+
+
 def status_summary(user: User) -> list[dict]:
-    """Сколько задач в каждом статусе (нулевые статусы тоже показываем)."""
     stmt = (
         db.select(Task.status, func.count(Task.id))
         .where(*scope_conditions(user))
@@ -26,14 +29,10 @@ def status_summary(user: User) -> list[dict]:
 
 
 def assignee_report(user: User) -> list[dict]:
-    """Таблица: исполнитель / всего / завершено / просрочено.
-
-    Задачи без исполнителя сюда не попадают (INNER JOIN) — они видны в сводке.
-    """
+    """Задачи без исполнителя учитываются в общей сводке, но не в этой таблице."""
     stmt = (
         db.select(
-            User.id,
-            User.username,
+            User.id, User.username,
             func.count(Task.id).label("total"),
             func.sum(case((Task.status == TaskStatus.DONE.value, 1), else_=0)).label("done"),
             func.sum(case((and_(*overdue_conditions()), 1), else_=0)).label("overdue"),
@@ -51,20 +50,25 @@ def assignee_report(user: User) -> list[dict]:
 
 
 def report_totals(user: User) -> dict:
+    total = _count(user)
+    done = _count(user, Task.status == TaskStatus.DONE.value)
     return {
-        "total": _count(user),
-        "done": _count(user, Task.status == TaskStatus.DONE.value),
+        "total": total,
+        "done": done,
         "overdue": _count(user, *overdue_conditions()),
+        "completion_percent": _percent(done, total),
     }
 
 
 def dashboard_stats(user: User) -> dict:
-    """Карточки дашборда: «мои», «просроченные», «завершённые»."""
     mine = (Task.assignee_id == user.id,)
+    total = _count(user)
+    done = _count(user, Task.status == TaskStatus.DONE.value)
     return {
         "my_total": _count(user, *mine),
         "my_overdue": _count(user, *mine, *overdue_conditions()),
-        "visible_total": _count(user),
-        "done": _count(user, Task.status == TaskStatus.DONE.value),
+        "visible_total": total,
+        "done": done,
         "overdue": _count(user, *overdue_conditions()),
+        "completion_percent": _percent(done, total),
     }

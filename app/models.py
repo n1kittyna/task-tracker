@@ -40,7 +40,6 @@ PRIORITY_VALUES = tuple(p.value for p in Priority)
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
-
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -49,7 +48,6 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     manager_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=now_utc)
-
     manager = db.relationship("User", remote_side=[id], back_populates="team_members")
     team_members = db.relationship("User", back_populates="manager")
 
@@ -76,7 +74,6 @@ class User(UserMixin, db.Model):
 
 class Task(db.Model):
     __tablename__ = "tasks"
-
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False, default="")
@@ -86,8 +83,7 @@ class Task(db.Model):
     created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=now_utc)
     updated_at = db.Column(db.DateTime, nullable=False, default=now_utc, onupdate=now_utc)
-    due_date = db.Column(db.Date, nullable=True)  # срок может быть не задан
-
+    due_date = db.Column(db.Date, nullable=True)
     assignee = db.relationship("User", foreign_keys=[assignee_id], back_populates="assigned_tasks")
     author = db.relationship("User", foreign_keys=[created_by_id], back_populates="created_tasks")
 
@@ -113,4 +109,9 @@ class Task(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id: str):
-    return db.session.get(User, int(user_id))
+    try:
+        user = db.session.get(User, int(user_id))
+    except (TypeError, ValueError):
+        return None
+    # Отключение администратором действует сразу, даже в уже открытой сессии.
+    return user if user is not None and user.is_active else None

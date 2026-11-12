@@ -1,3 +1,4 @@
+"""Правила доступа к задачам и маршрутам приложения."""
 from functools import wraps
 
 from flask import abort, current_app
@@ -25,12 +26,21 @@ def team_member_ids(user: User) -> list[int]:
     return ids + [user.id]
 
 
+def is_personal_task(user: User, task) -> bool:
+    """Личная задача: создана самим пользователем и назначена ему же.
+
+    Не приравниваем к личным задачи, назначенные сотруднику менеджером:
+    у таких задач автор и исполнитель различаются.
+    """
+    return task.created_by_id == user.id and task.assignee_id == user.id
+
+
 def can_view_task(user: User, task) -> bool:
     if user.role == Role.ADMIN.value:
         return True
     if user.role == Role.MANAGER.value:
         return task.created_by_id == user.id or task.assignee_id in team_member_ids(user)
-    return task.assignee_id == user.id  # employee
+    return task.assignee_id == user.id
 
 
 def can_manage_task(user: User, task) -> bool:
@@ -38,7 +48,9 @@ def can_manage_task(user: User, task) -> bool:
         return True
     if user.role == Role.MANAGER.value:
         return can_view_task(user, task)
-    return False
+    # Сотрудник может редактировать/удалять собственные личные задачи,
+    # но не задачи, полученные от руководителя.
+    return is_personal_task(user, task)
 
 
 def can_change_status(user: User, task) -> bool:

@@ -4,11 +4,9 @@
 
 {% block content %}
 <h1 class="h3 mb-3">{{ 'Редактирование задачи #' ~ task.id if task else 'Новая задача' }}</h1>
-
-<!-- Одна форма на create и update: action зависит от контекста -->
 <form method="post" class="card card-body col-lg-8"
       action="{{ url_for('tasks.task_edit', task_id=task.id) if task else url_for('tasks.task_create') }}">
-  {{ form.hidden_tag() }}  {# CSRF-токен #}
+  {{ form.hidden_tag() }}
   {{ ui.field(form.title) }}
   {{ ui.field(form.description) }}
   <div class="row">
@@ -16,7 +14,14 @@
     <div class="col-md-4">{{ ui.select_field(form.priority) }}</div>
     <div class="col-md-4">{{ ui.field(form.due_date) }}</div>
   </div>
-  {{ ui.select_field(form.assignee_id) }}
+  {% if current_user.role == Role.EMPLOYEE.value %}
+    <div class="alert alert-info py-2">
+      Это личная задача. Исполнителем автоматически будете вы.
+      Задачи, назначенные руководителем, можно завершать, но нельзя редактировать или удалять.
+    </div>
+  {% else %}
+    {{ ui.select_field(form.assignee_id) }}
+  {% endif %}
   <div class="d-flex gap-2">
     {{ form.submit(class="btn btn-primary") }}
     <a class="btn btn-outline-secondary"
