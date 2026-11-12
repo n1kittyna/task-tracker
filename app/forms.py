@@ -63,11 +63,31 @@ class StatusForm(FlaskForm):
 
 
 class UserForm(FlaskForm):
-    username = StringField("Логин", validators=[DataRequired(), Length(3, 50)])
-    email = StringField("E-mail", validators=[DataRequired(), Email(), Length(max=120)])
+    username = StringField("Логин", validators=[DataRequired(), Length(3, 50)],
+                           filters=[lambda s: s.strip() if s else s])
+    email = StringField("E-mail", validators=[DataRequired(), Email(), Length(max=120)],
+                        filters=[lambda s: s.strip().lower() if s else s])
     role = SelectField("Роль", choices=[(v, ROLE_LABELS[v]) for v in ROLE_VALUES])
     manager_id = SelectField("Руководитель", coerce=int, choices=[])
     is_active = BooleanField("Активен", default=True)
     password = PasswordField("Пароль", validators=[Optional(), Length(6, 128)],
                              description="При редактировании оставьте пустым, чтобы не менять.")
     submit = SubmitField("Сохранить")
+
+    def __init__(self, *args, original_user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_user_id = original_user.id if original_user is not None else None
+
+    def validate_username(self, field):
+        stmt = db.select(User).where(User.username == field.data)
+        if self.original_user_id is not None:
+            stmt = stmt.where(User.id != self.original_user_id)
+        if db.session.scalar(stmt):
+            raise ValidationError("Такой логин уже занят.")
+
+    def validate_email(self, field):
+        stmt = db.select(User).where(User.email == field.data)
+        if self.original_user_id is not None:
+            stmt = stmt.where(User.id != self.original_user_id)
+        if db.session.scalar(stmt):
+            raise ValidationError("Такой e-mail уже зарегистрирован.")

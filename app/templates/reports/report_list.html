@@ -2,11 +2,10 @@
 {% block content %}
 <h1 class="h3 mb-3">Отчёты</h1>
 {% if current_user.role == Role.EMPLOYEE.value %}
-  <div class="alert alert-info">Вы видите личную статистику — только по своим задачам.</div>
+  <div class="alert alert-info">Вы видите личную статистику — только по назначенным вам и личным задачам.</div>
 {% elif current_user.role == Role.MANAGER.value %}
   <div class="alert alert-info">Отчёт по вашей команде и созданным вами задачам.</div>
 {% endif %}
-
 <div class="row g-3 mb-4">
   {% for item in summary %}
   <div class="col-md-3"><div class="card card-body">
@@ -19,7 +18,17 @@
     <div class="h3 mb-0 text-danger">{{ totals.overdue }}</div>
   </div></div>
 </div>
-
+<div class="card card-body mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h5 mb-0">Выполнение задач</h2>
+    <strong>{{ totals.completion_percent }}%</strong>
+  </div>
+  <div class="progress" role="progressbar" aria-label="Доля завершённых задач"
+       aria-valuenow="{{ totals.completion_percent }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar bg-success" style="width: {{ totals.completion_percent }}%"></div>
+  </div>
+  <small class="text-muted mt-2">Завершено {{ totals.done }} из {{ totals.total }} задач</small>
+</div>
 <div class="row">
   <div class="col-lg-7">
     <h2 class="h5">По исполнителям</h2>
@@ -42,24 +51,24 @@
     </table>
   </div>
   <div class="col-lg-5">
-    <canvas id="statusChart"></canvas>
+    <canvas id="statusChart" aria-label="Распределение задач по статусам" role="img"></canvas>
   </div>
 </div>
 {% endblock %}
-
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-  // Данные приходят из view и безопасно сериализуются через |tojson
-  new Chart(document.getElementById('statusChart'), {
-    type: 'doughnut',
-    data: {
-      labels: {{ chart_labels|tojson }},
-      datasets: [{
-        data: {{ chart_values|tojson }},
-        backgroundColor: ['#6c757d', '#0d6efd', '#198754']
-      }]
-    }
-  });
+  if (typeof Chart !== 'undefined') {
+    new Chart(document.getElementById('statusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: {{ chart_labels|tojson }},
+        datasets: [{
+          data: {{ chart_values|tojson }},
+          backgroundColor: ['#6c757d', '#0d6efd', '#198754']
+        }]
+      }
+    });
+  }
 </script>
 {% endblock %}

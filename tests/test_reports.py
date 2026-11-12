@@ -16,7 +16,7 @@ def test_status_summary_counts(client, users, login, make_task):
 def test_assignee_report_totals_done_overdue(client, users, login, make_task):
     past = date.today() - timedelta(days=2)
     make_task(assignee=users["employee"], status=TaskStatus.DONE.value, due_date=past)
-    make_task(assignee=users["employee"], due_date=past)  # просрочена
+    make_task(assignee=users["employee"], due_date=past)
     make_task(assignee=users["employee"])
     login("manager")
     rows = {r["username"]: r for r in assignee_report(users["manager"])}
@@ -37,7 +37,20 @@ def test_employee_report_is_personal(client, users, login, make_task):
 
 def test_manager_report_scoped_to_team(client, users, login, make_task):
     make_task(assignee=users["employee"])
-    make_task(assignee=users["stranger"])
+    make_task(assignee=users["stranger"], author=users["manager2"])
     login("manager")
     assert report_totals(users["manager"])["total"] == 1
     assert report_totals(users["admin"])["total"] == 2
+
+
+def test_completion_percent_and_empty_database(client, users, login, make_task):
+    assert report_totals(users["admin"])["completion_percent"] == 0
+    make_task(status=TaskStatus.DONE.value, assignee=users["employee"])
+    make_task(status=TaskStatus.TODO.value, assignee=users["employee"])
+    login("admin")
+    totals = report_totals(users["admin"])
+    assert totals["total"] == 2
+    assert totals["done"] == 1
+    assert totals["completion_percent"] == 50
+    assert "50%" in client.get("/reports/").get_data(as_text=True)
+    assert "50%" in client.get("/").get_data(as_text=True)
